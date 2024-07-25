@@ -299,6 +299,7 @@ func apiReposPackageFromFile(c *gin.Context) {
 func apiReposPackageFromDir(c *gin.Context) {
 	forceReplace := c.Request.URL.Query().Get("forceReplace") == "1"
 	noRemove := c.Request.URL.Query().Get("noRemove") == "1"
+	asAbsolutePath := c.Request.URL.Query().Get("asAbsolutePath") == "1"
 
 	if !verifyDir(c) {
 		return
@@ -329,11 +330,16 @@ func apiReposPackageFromDir(c *gin.Context) {
 
 	var taskName string
 	var sources []string
+	baseDir := context.UploadPath()
+	if asAbsolutePath {
+		baseDir = "/"
+	}
+
 	if fileParam == "" {
 		taskName = fmt.Sprintf("Add packages from dir %s to repo %s", dirParam, name)
-		sources = []string{filepath.Join(context.UploadPath(), dirParam)}
+		sources = []string{filepath.Join(baseDir, dirParam)}
 	} else {
-		sources = []string{filepath.Join(context.UploadPath(), dirParam, fileParam)}
+		sources = []string{filepath.Join(baseDir, dirParam, fileParam)}
 		taskName = fmt.Sprintf("Add package %s from dir %s to repo %s", fileParam, dirParam, name)
 	}
 
@@ -388,7 +394,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 			}
 
 			// atempt to remove dir, if it fails, that's fine: probably it's not empty
-			os.Remove(filepath.Join(context.UploadPath(), dirParam))
+			os.Remove(filepath.Join(baseDir, dirParam))
 		}
 
 		if failedFiles == nil {
