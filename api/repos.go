@@ -332,7 +332,7 @@ func apiReposPackageFromDir(c *gin.Context) {
 	var sources []string
 	baseDir := context.UploadPath()
 	if asAbsolutePath {
-		baseDir = "/"
+		baseDir = ""
 	}
 
 	if fileParam == "" {
